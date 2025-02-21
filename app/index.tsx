@@ -13,7 +13,7 @@ export default function HomeScreen(): JSX.Element {
         <ImageBackground source={back} style={styles.background} resizeMode="cover">
           <View style={styles.overlay} />
           <View style={styles.textWrapper}>
-            <Text style={styles.header}>مرحبا بكم في <Text style={styles.mainWord}>حفظة</Text> </Text>
+            <Text style={styles.header}>مرحبًا بكم في <Text style={styles.mainWord}>حفظة</Text> </Text>
 
             <Text style={styles.para}>«خَيْرُكُمْ مَنْ تَعَلّمَ الْقُرْآنَ وَعَلّمَهُ»</Text>
           </View>
