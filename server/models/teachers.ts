@@ -3,8 +3,7 @@ import mongoose, { Document } from "mongoose";
 // Define the interface for Teacher
 export interface ITeacher extends Document {
     name: string;
-    phone: number;
-    createdAt?: Date;
+    phone: string;
     lastAttendance?: Date; 
 }
 
@@ -16,7 +15,7 @@ const teacherSchema = new mongoose.Schema<ITeacher>(
             trim: true,
         },
         phone: {
-            type: Number,
+            type: String,
             required: true,
             unique: true,
         },

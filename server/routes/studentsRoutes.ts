@@ -4,8 +4,8 @@ import Student, { IStudent } from '../models/students'; // تأكد من أن ل
 
 const router = express.Router();
 
-router.get('/', async (req: Request, res: Response) => {
-    try {
+router.get('/', async (req: Request, res: Response): Promise<void> => {   
+     try {
         const students = await Student.find();
         res.status(200).json(students);
     } catch (error) {
@@ -13,7 +13,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response): Promise<void> => {
     try {
         const studentData: IStudent = req.body;
         const newStudent = new Student(studentData);
@@ -24,15 +24,17 @@ router.post('/', async (req: Request, res: Response) => {
     }
 });
 
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "لا يوجد طالب برقم المعرف هذا" });
+            res.status(400).json({ message: "لا يوجد طالب برقم المعرف هذا" });
+            return;
         }
         const updatedStudent = await Student.findByIdAndUpdate(id, req.body, { new: true });
         if (!updatedStudent) {
-            return res.status(404).json({ message: "الطالب غير موجود" });
+            res.status(404).json({ message: "الطالب غير موجود" });
+            return;
         }
         res.status(200).json(updatedStudent);
     } catch (error) {
@@ -40,17 +42,19 @@ router.put('/:id', async (req: Request, res: Response) => {
     }
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "لا يوجد طالب برقم المعرف هذا" });
+            res.status(400).json({ message: "لا يوجد طالب برقم المعرف هذا" });
+            return;
         }
         const studentToDelete = await Student.findByIdAndDelete(id);
         if (studentToDelete) {
             res.status(200).json({ message: "تم حذف الطالب بنجاح" });
         } else {
-            return res.status(404).json({ message: "لا يوجد طالب بهذه البيانات" });
+            res.status(404).json({ message: "لا يوجد طالب بهذه البيانات" });
+            return;
         }
     } catch (error) {
         res.status(500).json({ message: "حدث خطأ أثناء حذف الطالب", error });

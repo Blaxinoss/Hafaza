@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "ss": "nodemon server.js",
+    "ss": "npx nodemon --exec ts-node server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -19,6 +19,7 @@
     "mongoose": "^8.10.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/mongoose": "^5.11.96",
     "nodemon": "^3.1.9"
   }
