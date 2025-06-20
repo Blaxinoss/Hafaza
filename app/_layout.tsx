@@ -37,6 +37,10 @@ export default function RootLayout(): JSX.Element {
         name="AttendanceScreen"
         options={{ title: "شاشة الغيابات" }}
       />
+          <Stack.Screen
+        name="Sessions"
+        options={{ title: "سيشنز" }}
+      />
       <Stack.Screen
         name="AddPerson"
         options={{ title: "إضافة أعضاء" }}

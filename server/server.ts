@@ -4,8 +4,10 @@ import express, { Application, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import studentsRoute from './routes/studentsRoutes';
 import teachersRoute from './routes/teachersRoutes';
+import attendanceRoutes from './routes/attendance';
+import sessionRoutes from './routes/sessions';
 
-// تحميل متغيرات البيئة
+
 dotenv.config();
 
 const app: Application = express();
@@ -14,7 +16,6 @@ app.use(cors());
 
 const port: string | number = process.env.PORT || 5000;
 
-// الاتصال بقاعدة البيانات
 mongoose.connect(process.env.MONGO_URI as string)
     .then(() => console.log("MongoDB connected"))
     .catch((err) => console.log(err));
@@ -22,6 +23,11 @@ mongoose.connect(process.env.MONGO_URI as string)
 app.get('/', (req: Request, res: Response) => {
     res.send("Hello, World!");
 });
+
+
+app.use('/api/sessions', sessionRoutes);
+
+app.use('/api/attendance', attendanceRoutes);
 
 app.use('/api/teachers', teachersRoute);
 app.use('/api/students', studentsRoute);

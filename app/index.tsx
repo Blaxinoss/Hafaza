@@ -23,6 +23,9 @@ export default function HomeScreen(): JSX.Element {
           <TouchableOpacity onPress={() => router.push("/AttendanceScreen")}>
             <Ionicons style={styles.icon} name="document-attach" size={32} color="white" />
           </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push("/Sessions")}>
+            <Ionicons style={styles.icon} name="document-attach" size={32} color="white" />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push("/AddPerson")}>
             <Ionicons style={styles.icon} name="person-add" size={32} color="white" />
           </TouchableOpacity>
