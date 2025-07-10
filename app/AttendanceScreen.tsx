@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Button,
   FlatList,
   StyleSheet,
   Text,
@@ -10,6 +9,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type Student = {
   _id: string;
@@ -21,25 +23,50 @@ type Student = {
 };
 
 type AttendanceEntry = {
-  student: string;
+  studentId: string;
+  sessionId: string;
   isPresent: boolean;
-  surahs?: { name: string; ayasCount: number }[];
+  surahs?: {
+    name: string;
+    fromAya: number;
+    toAya: number;
+  }[];
   evaluation?: 'ممتاز' | 'جيد جدًا' | 'جيد' | 'ضعيف';
   notes?: string;
 };
 
 type SessionForm = {
-  date: Date;
   attendances: AttendanceEntry[];
 };
+
+type RootStackParamList = {
+  SessionListScreen: {
+    sessionId: string;
+  };
+  AttendanceScreen: {
+    sessionId: string;
+    updatedAttendance?: AttendanceEntry;
+  };
+  AttendanceScreenDetails: {
+    sessionId: string;
+    studentId: string;
+    isPresent: boolean;
+    updateAttendance?: (updated: AttendanceEntry) => void;
+  };
+};
+
+type AttendanceListNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const AttendanceScreen: React.FC = () => {
   const [attendanceList, setAttendanceList] = useState<Student[]>([]);
   const [search, setSearch] = useState('');
+  const route = useRoute<RouteProp<RootStackParamList, 'AttendanceScreen'>>();
+  const { sessionId: initialSessionId } = route.params;
+  const [sessionId, setSessionId] = useState(initialSessionId);
   const [sessionData, setSessionData] = useState<SessionForm>({
-    date: new Date(),
     attendances: [],
   });
+  const navigation = useNavigation<AttendanceListNavigationProp>();
 
   const fetchStudents = async () => {
     try {
@@ -56,37 +83,51 @@ const AttendanceScreen: React.FC = () => {
     fetchStudents();
   }, []);
 
+  useEffect(() => {
+    if (route.params?.sessionId) {
+      setSessionId(route.params.sessionId);
+    }
+  }, [route.params]);
+
+  useEffect(() => {
+    console.log('Session data updated:', sessionData);
+  }, [sessionData]);
+
   const markAttendance = (id: string, status: boolean) => {
     setSessionData((prev) => {
-      const existing = prev.attendances.find((a) => a.student === id);
-      const newAttendances = existing
-        ? prev.attendances.map((a) =>
-            a.student === id ? { ...a, isPresent: status } : a
-          )
-        : [...prev.attendances, { student: id, isPresent: status }];
+      const existing = prev.attendances.find((a) => a.studentId === id);
+      const updatedAttendances = [
+        ...prev.attendances.filter((a) => a.studentId !== id),
+        existing
+          ? { ...existing, isPresent: status }
+          : { studentId: id, sessionId, isPresent: status },
+      ];
       return {
         ...prev,
-        attendances: newAttendances,
+        attendances: updatedAttendances,
       };
     });
-
-    setAttendanceList((prevList) =>
-      prevList.map((student) =>
-        student._id === id ? { ...student, isPresent: status } : student
-      )
-    );
   };
 
   const handleSave = async () => {
+    console.log('Data to be sent to backend:', sessionData);
     try {
-      const res = await axios.post('http://localhost:3000/api/sessions', sessionData);
-      console.log('Session saved:', res.data);
+      const res = await axios.post('http://localhost:3000/api/attendance', sessionData);
+      console.log('Session data saved:', res.data);
     } catch (err) {
       console.error('Error saving session:', err);
     }
   };
 
-  const filteredList = attendanceList.filter((s) =>
+  const mergedList = attendanceList.map((student) => {
+    const attendance = sessionData.attendances.find((a) => a.studentId === student._id);
+    return {
+      ...student,
+      isPresent: attendance?.isPresent ?? false,
+    };
+  });
+
+  const filteredList = mergedList.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -95,11 +136,9 @@ const AttendanceScreen: React.FC = () => {
       <View style={styles.manageDiv}>
         <Text style={styles.md_header}>الأعضاء</Text>
         <View style={styles.headerRight}>
-         
-          <Text style={styles.memberCount}>{attendanceList.length} عضو </Text>
+          <Text style={styles.memberCount}>{attendanceList.length} عضو</Text>
         </View>
       </View>
-
       <TextInput
         style={styles.searchBar}
         placeholder="... ابحث عن عضو"
@@ -107,7 +146,6 @@ const AttendanceScreen: React.FC = () => {
         onChangeText={setSearch}
         placeholderTextColor="#aaa"
       />
-
       {filteredList.length > 0 && (
         <FlatList
           data={filteredList}
@@ -151,87 +189,140 @@ const AttendanceScreen: React.FC = () => {
                   onPress={() => markAttendance(item._id, false)}
                 >
                   <Text
-                    style={[
-                      styles.buttonText,
-                      item.isPresent === false && styles.absentButtonText,
-                    ]}
+                    style={[styles.buttonText, item.isPresent === false && styles.absentButtonText]}
                   >
                     غائب
                   </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => {
+                    navigation.navigate('AttendanceScreenDetails', {
+                      studentId: item._id,
+                      sessionId,
+                      isPresent: item.isPresent ?? false,
+                      updateAttendance: (updated: AttendanceEntry) => {
+                        setSessionData((prev) => {
+                          const exists = prev.attendances.find((a) => a.studentId === updated.studentId);
+                          console.log('Callback received:', updated);
+                          const updatedList = exists
+                            ? prev.attendances.map((a) =>
+                                a.studentId === updated.studentId ? { ...a, ...updated } : a
+                              )
+                            : [...prev.attendances, updated];
+                          return { ...prev, attendances: updatedList };
+                        });
+                      },
+                    });
+                  }}
+                >
+                  <Text style={styles.buttonText}>تفاصيل</Text>
                 </TouchableOpacity>
               </View>
             </View>
           )}
         />
       )}
-
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Ionicons name="save" size={20} color="white" />
         <Text style={styles.saveButtonText}>حفظ الحضور</Text>
       </TouchableOpacity>
-
-    
     </View>
   );
 };
 
-export default AttendanceScreen;
-
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+  },
   manageDiv: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
   },
-  md_header: { fontSize: 20, fontWeight: 'bold' },
-  headerRight: { flexDirection: 'row', alignItems: 'center' },
-  md_button: {
+  md_header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  headerRight: {
     flexDirection: 'row',
-    backgroundColor: '#007bff',
-    padding: 8,
-    borderRadius: 5,
-    marginRight: 10,
+    alignItems: 'center',
   },
-  md_button_text: { color: 'white', marginLeft: 5 },
-  memberCount: { fontSize: 14, color: '#555' },
+  memberCount: {
+    fontSize: 16,
+    color: '#666',
+  },
   searchBar: {
-    backgroundColor: '#f0f0f0',
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
     borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
+    paddingHorizontal: 10,
+    marginBottom: 16,
+    backgroundColor: '#fff',
   },
   studentContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  studentName: { fontSize: 16 },
-  buttonsContainer: { flexDirection: 'row' },
-  button: {
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    backgroundColor: '#ccc',
-    borderRadius: 5,
-    marginHorizontal: 5,
-  },
-  presentButton: { backgroundColor: '#28a745' },
-  presentButtonText: { color: 'white' },
-  absentButton: { backgroundColor: '#dc3545' },
-  absentButtonText: { color: 'white' },
-  buttonText: { color: '#000' },
-  saveButton: {
-    marginTop: 20,
-    backgroundColor: '#007bff',
-    paddingVertical: 12,
+    padding: 12,
+    backgroundColor: '#fff',
     borderRadius: 8,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  saveButtonText: { color: 'white', marginLeft: 8, fontSize: 16 },
+  studentName: {
+    fontSize: 16,
+    color: '#333',
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  button: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: '#f0f0f0',
+  },
+  buttonText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  presentButton: {
+    backgroundColor: '#28a745',
+  },
+  presentButtonText: {
+    color: '#fff',
+  },
+  absentButton: {
+    backgroundColor: '#dc3545',
+  },
+  absentButtonText: {
+    color: '#fff',
+  },
+  saveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    backgroundColor: '#007bff',
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    marginLeft: 8,
+  },
 });
+
+export default AttendanceScreen;

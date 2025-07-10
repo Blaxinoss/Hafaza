@@ -131,7 +131,7 @@ export default function AddPerson() {
 }}>
       <TextInput
         style={styles.input}
-        placeholder="ابحث عن شخص معين"
+        placeholder="🔍...أبحث عن شخص معين"
         value={searchWord}
 onChangeText={(e) => setSearchWord(e)}
         keyboardType="numeric"
@@ -152,8 +152,14 @@ onChangeText={(e) => setSearchWord(e)}
       <Text>الهاتف: {item.phone}</Text>
     </View>
   ))}
-</View>
 
+ 
+</View>
+ {filteredList.length == 0 && (
+    <View>
+      <Text style={{fontWeight:"bold",color:"#007bff"}}>لم تضف أي طلبة بعد</Text>
+    </View>
+  )}
 
     </View>
   );
@@ -177,6 +183,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
+    textAlign:"right"
   },
   button: {
     width: '100%',
@@ -193,5 +200,6 @@ const styles = StyleSheet.create({
   backText: {
     color: '#007bff',
     fontSize: 16,
+    marginBottom:25
   },
 });

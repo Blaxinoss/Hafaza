@@ -8,27 +8,39 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import axios from 'axios';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 
 interface Session {
   _id: string;
   date: Date;
-  attendancesCreated?: number; // عدد الحضور لكل جلسة
+  presentStudents?: []; // عدد الحضور لكل جلسة
 }
+
+type RootStackParamList = {
+  SessionListScreen: undefined;
+  AttendanceScreen: { sessionId: string };
+};
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'SessionListScreen'>;
+
 
 export default function Sessions() {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [attendancesCreatedCount,setAttendancesCreatedCount] = useState <number | 0>(0);
+  const [studentsCount,setStudentsCount] = useState<number>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message,setMessage] = useState<string |null>(null)
-  const router = useRouter();
+
+const navigation = useNavigation<NavigationProp>();
 
   const fetchSessions = async () => {
     setLoading(true);
     try {
       const res = await axios.get('http://localhost:3000/api/sessions');
-      setSessions(res.data);
+      setSessions(res.data.sessions);
+      setStudentsCount(res.data.studentCurrentCount)
+      console.log(res.data)
     } catch (error) {
       console.error('Error fetching sessions:', error);
     } finally {
@@ -42,9 +54,11 @@ export default function Sessions() {
 
 const renderSessionItem = ({ item }: { item: Session }) => {
   return (
-    <TouchableOpacity style={styles.sessionCard}>
+    <TouchableOpacity style={styles.sessionCard}
+    onPress={()=>navigation.navigate('AttendanceScreen',{sessionId : item._id})}
+    >
       <Text style={styles.sessionDate}>
-        📅 {new Date(item.date).toLocaleDateString()} - {attendancesCreatedCount}
+        📅 {new Date(item.date).toLocaleDateString()} - {item.presentStudents?.length}/{studentsCount} حضور
       </Text>
     </TouchableOpacity>
   );
@@ -60,7 +74,6 @@ const renderSessionItem = ({ item }: { item: Session }) => {
 } else {
   console.log('Session creation response:', result.data);
   setMessage("Session Created Successfully");
-  setAttendancesCreatedCount(result.data.attendancesCreated);
   fetchSessions();
 }
     }catch(error : any){

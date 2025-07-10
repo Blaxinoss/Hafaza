@@ -8,7 +8,16 @@ const router = express.Router();
 // ✅ إضافة حضور جديد
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { studentId, sessionId, isPresent, evaluation, surahs, notes } = req.body;
+
+
+   const {attendances} = req.body;
+       const savedAttendances = [];
+
+   const entries = Array.isArray(attendances) ? attendances : [attendances];
+
+   for(const entry of entries){
+      console.log(entry)
+    const { studentId, sessionId, isPresent, evaluation, surahs, notes } = entry;
 
     if (!studentId) {
        res.status(400).json({ error: 'معرف الطالب مطلوب' });
@@ -42,12 +51,16 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     });
 
     const saved = await attendance.save();
-     res.status(201).json(saved);
-  } catch (error) {
-     res.status(500).json({ error: 'حدث خطأ أثناء تسجيل الحضور' });
+ savedAttendances.push(saved);
+     }
+           res.status(201).json(savedAttendances);
+
+  } catch (error : any) {
+     res.status(500).json({ error: 'حدث خطأ أثناء تسجيل الحضور' , message : error.message});
      return
   }
 });
+
 
 // ✅ استعلام عن حضور طلاب لجلسة معينة
 router.get('/session/:sessionId', async (req: Request, res: Response): Promise<void> => {

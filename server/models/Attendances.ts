@@ -5,7 +5,8 @@ export interface IAttendance extends Document {
   student: mongoose.Types.ObjectId;
   session: mongoose.Types.ObjectId;
   isPresent: boolean;
-  surahs: { name: string; ayasCount: number }[];
+  surahs: { name: string; fromAya: number
+toAya: number }[];
   evaluation?: "ممتاز" | "جيد جدًا" | "جيد" | "ضعيف";
   notes?: string;
 }
