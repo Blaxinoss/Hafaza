@@ -2,7 +2,8 @@ import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from "expo-router";
 import React, { useEffect } from "react";
 import { Platform } from "react-native";
-export default function RootLayout(): JSX.Element {
+import "./global.css"
+export default function RootLayout() {
 
   const [fontAdded, error] = useFonts({
     "MainFont": require('../assets/fonts/Lemonada-Bold.ttf')
