@@ -2,7 +2,7 @@ import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from "expo-router";
 import React, { useEffect } from "react";
 import { Platform } from "react-native";
-import "./global.css"
+import '../global.css'
 export default function RootLayout() {
 
   const [fontAdded, error] = useFonts({
@@ -27,11 +27,11 @@ export default function RootLayout() {
         name="index"
         options={{
           title: "الشاشه الرئيسية",
-          headerStyle: { backgroundColor: "#11274c", borderBottomColor: "none" }, // لون الخلفية
+          headerStyle: { backgroundColor: "#11274c"}, // لون الخلفية
           headerTintColor: "#fff", // لون النص
           headerTitleStyle: { fontWeight: "bold" },
           headerTitleAlign: "center",
-
+        
         }}
       />
       <Stack.Screen

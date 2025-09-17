@@ -84,7 +84,7 @@ const renderSessionItem = ({ item }: { item: Session }) => {
 
   return (
     <View  style={styles.container}>
-      <Text  style={styles.title}>كل الجلسات</Text>
+      <Text className='' style={styles.title}>كل الجلسات</Text>
       <TouchableOpacity style={styles.addButton} onPress={sessionAdding}>
   <Text style={styles.addButtonText}>➕ إضافة جلسة جديدة</Text>
 </TouchableOpacity>

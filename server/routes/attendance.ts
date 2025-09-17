@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
-import Attendance from '../models/Attendances';
-import Student from '../models/students';
-import Session from '../models/sessions';
+import Attendance from '../models/Attendances.js';
+import Student from '../models/students.js';
+import Session from '../models/sessions.js';
 
 const router = express.Router();
 
@@ -15,9 +15,17 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
    const entries = Array.isArray(attendances) ? attendances : [attendances];
 
+
+   
    for(const entry of entries){
       console.log(entry)
     const { studentId, sessionId, isPresent, evaluation, surahs, notes } = entry;
+
+    const existingAttendance = await Attendance.findOne({ student: studentId, session: sessionId });
+if (existingAttendance) {
+  res.status(400).json({ error: 'تم تسجيل حضور هذا الطالب بالفعل للجلسة' });
+  return;
+}
 
     if (!studentId) {
        res.status(400).json({ error: 'معرف الطالب مطلوب' });
@@ -66,22 +74,55 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 router.get('/session/:sessionId', async (req: Request, res: Response): Promise<void> => {
   try {
     const sessionId = req.params.sessionId;
+
     const sessionExists = await Session.findById(sessionId);
     if (!sessionExists) {
-       res.status(404).json({ error: 'الجلسة غير موجودة' });
-       return;
+      res.status(404).json({ error: 'الجلسة غير موجودة' });
+      return;
     }
 
     const attendances = await Attendance.find({ session: sessionId })
-      .populate('student')
-      .populate('session', 'date');
+      .populate('student');
 
-     res.status(200).json(attendances);
+    // لو مفيش حضور مسجل → رجع كل الطلاب isPresent=false
+    if (attendances.length === 0) {
+      const students = await Student.find();
+      res.status(200).json({
+        sessionId,
+        count: students.length,
+        students: students.map(stu => ({
+          ...stu.toObject(),
+          isPresent: false,
+          evaluation: null,
+          surahs: [],
+          notes: ''
+        }))
+      });
+      return;
+    }
+
+    // لو فيه حضور مسجل → رجع من Attendance
+    res.status(200).json({
+      sessionId,
+      count: attendances.length,
+      students: attendances.map(record => ({
+        ...(typeof record.student === 'object' && record.student !== null && 'toObject' in record.student
+          ? (record.student as any).toObject()
+          : { _id: record.student }),
+        isPresent: record.isPresent,
+        evaluation: record.evaluation,
+        surahs: record.surahs,
+        notes: record.notes
+      }))
+    });
+
   } catch (error) {
-     res.status(500).json({ error: 'فشل في جلب بيانات الحضور' });
-     return;
+    res.status(500).json({ error: 'فشل في جلب بيانات الحضور' });
+    return;
   }
 });
+
+
 
 // ✅ استعلام عن حضور طالب معين
 router.get('/student/:studentId', async (req: Request, res: Response): Promise<void> => {

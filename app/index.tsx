@@ -2,15 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from "expo-router";
 import React from "react";
 import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import back from '../assets/images/Background.jpg';
 
-export default function HomeScreen(): JSX.Element {
+export default function HomeScreen(){
   const router = useRouter();
 
   return (
     <>
       <View style={styles.container}>
-        <ImageBackground source={back} style={styles.background} resizeMode="cover">
+        <ImageBackground source={require('../assets/images/back.jpg')} style={styles.background} resizeMode="cover">
           <View style={styles.overlay} />
           <View style={styles.textWrapper}>
             <Text style={styles.header}>مرحبًا بكم في <Text style={styles.mainWord}>حفظة</Text> </Text>

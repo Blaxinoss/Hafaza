@@ -2,7 +2,11 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "module": "CommonJS",
+    "module": "esnext", // <-- Change this line!
+    "target": "esnext",
+    "sourceMap": true,
+    "outDir": "./dist",
+    
     "paths": {
       "@/*": [
         "./*"

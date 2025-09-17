@@ -1,7 +1,7 @@
 import express from 'express';
-import Session from '../models/sessions';
-import Student from '../models/students';
-import Attendance from '../models/Attendances';
+import Session from '../models/sessions.js';
+import Student from '../models/students.js';
+import Attendance from '../models/Attendances.js';
 
 const router = express.Router();
 

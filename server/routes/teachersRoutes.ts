@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
-import Teacher, { ITeacher } from '../models/teachers';
+import Teacher, { ITeacher } from '../models/teachers.js';
 
 const router = express.Router();
 
