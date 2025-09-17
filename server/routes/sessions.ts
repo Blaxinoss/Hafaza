@@ -13,19 +13,19 @@ router.post('/', async (req, res) => {
     const session = new Session({ date });
     await session.save();
 
-       const students = await Student.find({});
+    const students = await Student.find({});
 
-         const attendances = students.map(student => ({
+    const attendances = students.map(student => ({
       student: student._id,
       session: session._id,
-      isPresent: false,  
+      isPresent: false,
       evaluation: null,
-      surahs:[],
+      surahs: [],
     }));
 
-        await Attendance.insertMany(attendances);
+    await Attendance.insertMany(attendances);
 
-    
+
     res.status(201).json({ session, attendancesCreated: attendances.length });
 
   } catch (err) {
@@ -36,39 +36,29 @@ router.post('/', async (req, res) => {
 
 // GET /api/sessions
 router.get('/', async (req, res) => {
-   try {
+  try {
+    // عدد كل الطلاب
     const studentCurrentCount = await Student.countDocuments();
-    const sessions = await Session.aggregate([
-      {
-        $lookup: {
-          from: "attendances", // لازم يكون نفس اسم الكولكشن في MongoDB (غالبًا lowercase وجمع)
-          localField: "_id",
-          foreignField: "session",
-          as: "attendances",
-        },
-      },
-      {
-        $addFields: {
-          presentStudents: {
-            $filter: {
-              input: "$attendances",
-              as: "att",
-              cond: { $eq: ["$$att.isPresent", true] },
-            },
-          },
-        },
-      },
-      {
-        $project: {
-          attendances: 0, // إخفاء الحقول غير المهمة لو عايز
-        },
-      },
-    ]);
 
-    res.json({sessions,studentCurrentCount});
-  } catch (err) {
+    // جلب كل الجلسات
+    const sessions = await Session.find().sort({ date: -1 });
+
+    // حساب عدد الحاضرين لكل جلسة
+    const sessionsWithCounts = await Promise.all(
+      sessions.map(async (session) => {
+        const presentCount = await Attendance.countDocuments({ session: session._id, isPresent: true });
+        return {
+          _id: session._id,
+          date: session.date,
+          presentCount,
+        };
+      })
+    );
+
+    res.json({ sessions: sessionsWithCounts, studentCurrentCount });
+  } catch (err: any) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching sessions" });
+    res.status(500).json({ message: 'Error fetching sessions', error: err.message });
   }
 });
 

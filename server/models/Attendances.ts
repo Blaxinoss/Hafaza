@@ -15,12 +15,7 @@ const attendanceSchema = new mongoose.Schema({
   student: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
   session :{type:mongoose.Schema.Types.ObjectId, ref:"Session", required:true},
   isPresent: { type: Boolean, required: true },
-  surahs: [
-    {
-      name: { type: String },
-      ayasCount: { type: Number },
-    },
-  ],
+  surahs: {type : Array,required:true},
   evaluation: { type: String, enum: ['ممتاز', 'جيد جدًا', 'جيد', 'ضعيف'] },
   notes: { type: String }
 });

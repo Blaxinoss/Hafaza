@@ -27,18 +27,15 @@ export default function RootLayout() {
         name="index"
         options={{
           title: "الشاشه الرئيسية",
-          headerStyle: { backgroundColor: "#11274c"}, // لون الخلفية
+          headerStyle: { backgroundColor: "#11274c" }, // لون الخلفية
           headerTintColor: "#fff", // لون النص
           headerTitleStyle: { fontWeight: "bold" },
           headerTitleAlign: "center",
-        
+
         }}
       />
+
       <Stack.Screen
-        name="AttendanceScreen"
-        options={{ title: "شاشة الغيابات" }}
-      />
-          <Stack.Screen
         name="Sessions"
         options={{ title: "سيشنز" }}
       />

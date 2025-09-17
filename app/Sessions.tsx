@@ -10,29 +10,30 @@ import {
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React from 'react';
 
 
 interface Session {
   _id: string;
   date: Date;
-  presentStudents?: []; // عدد الحضور لكل جلسة
+  presentCount: number; // بدل presentStudents
 }
 
 type RootStackParamList = {
   SessionListScreen: undefined;
-  AttendanceScreen: { sessionId: string };
+  SessionAttendance: { sessionId: string, onUpdateCount: (id: string, becamePresent: boolean) => void };
 };
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'SessionListScreen'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'SessionAttendance'>;
 
 
 export default function Sessions() {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [studentsCount,setStudentsCount] = useState<number>();
+  const [studentsCount, setStudentsCount] = useState<number>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message,setMessage] = useState<string |null>(null)
+  const [message, setMessage] = useState<string | null>(null)
 
-const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp>();
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -48,46 +49,60 @@ const navigation = useNavigation<NavigationProp>();
     }
   };
 
+
+  const updatePresentCount = (sessionId: string, becamePresent: boolean) => {
+    setSessions(prev =>
+      prev.map(s => s._id === sessionId
+        ? { ...s, presentCount: s.presentCount + (becamePresent ? 1 : -1) }
+        : s
+      )
+    );
+  };
+
   useEffect(() => {
     fetchSessions();
   }, []);
 
-const renderSessionItem = ({ item }: { item: Session }) => {
-  return (
-    <TouchableOpacity style={styles.sessionCard}
-    onPress={()=>navigation.navigate('AttendanceScreen',{sessionId : item._id})}
-    >
-      <Text style={styles.sessionDate}>
-        📅 {new Date(item.date).toLocaleDateString()} - {item.presentStudents?.length}/{studentsCount} حضور
-      </Text>
-    </TouchableOpacity>
-  );
-};
+  const renderSessionItem = ({ item }: { item: Session }) => {
+    return (
+      <TouchableOpacity
+        style={styles.sessionCard}
+        onPress={() =>
+          navigation.navigate('SessionAttendance', { sessionId: item._id ?? '', onUpdateCount: updatePresentCount })
 
-  const sessionAdding =async()=>{
-    try{
+        }
+      >
+        <Text style={styles.sessionDate}>
+          📅 {new Date(item.date).toLocaleDateString()} - {item.presentCount}/{studentsCount} حضور
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const sessionAdding = async () => {
+    try {
       const date = new Date();
-      const result = await axios.post('http://localhost:3000/api/sessions',{date});
-   if (!result || !result.data) {
-  console.log('No data received from session creation');
-  setMessage("Session Failed to be created");
-} else {
-  console.log('Session creation response:', result.data);
-  setMessage("Session Created Successfully");
-  fetchSessions();
-}
-    }catch(error : any){
-   console.error('Error adding session:', error);
-    setError(error.message || 'حدث خطأ غير متوقع');
+      const result = await axios.post('http://localhost:3000/api/sessions', { date });
+      if (!result || !result.data) {
+        console.log('No data received from session creation');
+        setMessage("Session Failed to be created");
+      } else {
+        console.log('Session creation response:', result.data);
+        setMessage("Session Created Successfully");
+        fetchSessions();
+      }
+    } catch (error: any) {
+      console.error('Error adding session:', error);
+      setError(error.message || 'حدث خطأ غير متوقع');
     }
   }
 
   return (
-    <View  style={styles.container}>
+    <View style={styles.container}>
       <Text className='' style={styles.title}>كل الجلسات</Text>
       <TouchableOpacity style={styles.addButton} onPress={sessionAdding}>
-  <Text style={styles.addButtonText}>➕ إضافة جلسة جديدة</Text>
-</TouchableOpacity>
+        <Text style={styles.addButtonText}>➕ إضافة جلسة جديدة</Text>
+      </TouchableOpacity>
 
 
       {loading ? (
@@ -124,17 +139,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   addButton: {
-  backgroundColor: '#007bff',
-  padding: 12,
-  borderRadius: 8,
-  marginBottom: 16,
-  alignItems: 'center',
-},
-addButtonText: {
-  color: '#fff',
-  fontSize: 16,
-  fontWeight: 'bold',
-},
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   sessionCard: {
     backgroundColor: '#f1f1f1',
     padding: 16,

@@ -3,6 +3,8 @@ import Attendance from '../models/Attendances.js';
 import Student from '../models/students.js';
 import Session from '../models/sessions.js';
 
+/* This code snippet is defining a route in an Express router to handle adding new attendance records.
+Here's a breakdown of what the code is doing: */
 const router = express.Router();
 
 // ✅ إضافة حضور جديد
@@ -10,62 +12,42 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
 
 
-   const {attendances} = req.body;
-       const savedAttendances = [];
+    const { attendances } = req.body;
+    const savedAttendances = [];
 
-   const entries = Array.isArray(attendances) ? attendances : [attendances];
+    const entries = Array.isArray(attendances) ? attendances : [attendances];
 
 
-   
-   for(const entry of entries){
+
+    for (const entry of entries) {
       console.log(entry)
-    const { studentId, sessionId, isPresent, evaluation, surahs, notes } = entry;
+      const { studentId, sessionId, isPresent, evaluation, surahs, notes } = entry;
 
-    const existingAttendance = await Attendance.findOne({ student: studentId, session: sessionId });
-if (existingAttendance) {
-  res.status(400).json({ error: 'تم تسجيل حضور هذا الطالب بالفعل للجلسة' });
-  return;
-}
 
-    if (!studentId) {
-       res.status(400).json({ error: 'معرف الطالب مطلوب' });
-       return
+      if (!studentId) {
+        res.status(400).json({ error: 'معرف الطالب مطلوب' });
+        return
+      }
+
+      if (!sessionId) {
+        res.status(400).json({ error: 'معرف الجلسة مطلوب' });
+        return
+      }
+
+      const updated = await Attendance.findOneAndUpdate({ student: studentId, session: sessionId }, { isPresent, evaluation, surahs, notes }, { new: true })
+
+      if (!updated) {
+        res.status(404).json({ error: 'الحضور غير موجود لهذا الطالب في هذه الجلسة' });
+        return;
+      }
+      savedAttendances.push(updated);
     }
 
-    if (!sessionId) {
-       res.status(400).json({ error: 'معرف الجلسة مطلوب' });
-       return
-    }
+    res.status(201).json(savedAttendances);
 
-    const student = await Student.findById(studentId);
-    if (!student) {
-       res.status(404).json({ error: 'الطالب غير موجود' });
-       return
-    }
-
-    const session = await Session.findById(sessionId);
-    if (!session) {
-       res.status(404).json({ error: 'الجلسة غير موجودة' });
-       return
-    }
-
-    const attendance = new Attendance({
-      student: studentId,
-      session: sessionId,
-      isPresent,
-      evaluation,
-      surahs,
-      notes,
-    });
-
-    const saved = await attendance.save();
- savedAttendances.push(saved);
-     }
-           res.status(201).json(savedAttendances);
-
-  } catch (error : any) {
-     res.status(500).json({ error: 'حدث خطأ أثناء تسجيل الحضور' , message : error.message});
-     return
+  } catch (error: any) {
+    res.status(500).json({ error: 'حدث خطأ أثناء تسجيل الحضور', message: error.message });
+    return
   }
 });
 
@@ -84,36 +66,10 @@ router.get('/session/:sessionId', async (req: Request, res: Response): Promise<v
     const attendances = await Attendance.find({ session: sessionId })
       .populate('student');
 
-    // لو مفيش حضور مسجل → رجع كل الطلاب isPresent=false
-    if (attendances.length === 0) {
-      const students = await Student.find();
-      res.status(200).json({
-        sessionId,
-        count: students.length,
-        students: students.map(stu => ({
-          ...stu.toObject(),
-          isPresent: false,
-          evaluation: null,
-          surahs: [],
-          notes: ''
-        }))
-      });
-      return;
-    }
-
-    // لو فيه حضور مسجل → رجع من Attendance
     res.status(200).json({
       sessionId,
       count: attendances.length,
-      students: attendances.map(record => ({
-        ...(typeof record.student === 'object' && record.student !== null && 'toObject' in record.student
-          ? (record.student as any).toObject()
-          : { _id: record.student }),
-        isPresent: record.isPresent,
-        evaluation: record.evaluation,
-        surahs: record.surahs,
-        notes: record.notes
-      }))
+      attendances
     });
 
   } catch (error) {
@@ -123,6 +79,80 @@ router.get('/session/:sessionId', async (req: Request, res: Response): Promise<v
 });
 
 
+router.get('/attendance/:attendanceId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { attendanceId } = req.params;
+
+    const attendance = await Attendance.findById(attendanceId)
+      .populate('student')   // بيانات الطالب
+      .populate('session');  // بيانات الجلسة لو محتاج
+
+    if (!attendance) {
+      res.status(404).json({ error: 'سجل الحضور غير موجود' });
+      return
+    }
+
+    res.status(200).json({
+      message: 'تم جلب سجل الحضور بنجاح',
+      attendance
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'فشل في جلب سجل الحضور' });
+  }
+});
+
+// تعديل حضور طالب في جلسة معينة
+router.put('/attendance/:attendanceId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const attendanceId = req.params.attendanceId;
+    const { isPresent, evaluation, surahs, notes } = req.body;
+
+    const updatedAttendance = await Attendance.findByIdAndUpdate(
+      attendanceId,
+      { isPresent, evaluation, surahs, notes },
+      { new: true }
+    ).populate('student session');
+
+    if (!updatedAttendance) {
+      res.status(404).json({ error: 'سجل الحضور غير موجود' });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'تم تحديث معلومات حضور الطالب بنجاح',
+      attendance: updatedAttendance
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: 'فشل في تحديث الحضور' });
+  }
+});
+
+router.patch('/attendance/:attendanceId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const attendanceId = req.params.attendanceId;
+    const { isPresent } = req.body;
+    const patchedAttendance = await Attendance.findByIdAndUpdate(attendanceId, {
+      isPresent
+    }, { new: true })
+
+    if (!patchedAttendance) {
+      res.status(404).json({ error: 'سجل الحضور الذي ترغب في تحديثه غير موجود' });
+      return;
+    }
+    res.status(200).json({
+      message: 'تم تحديث غياب الطالب بنجاح',
+      attendance: patchedAttendance
+    });
+
+
+  } catch (error) {
+    res.status(500).json({ error: 'فشل في تحديث الغياب فقط' });
+
+  }
+})
+
 
 // ✅ استعلام عن حضور طالب معين
 router.get('/student/:studentId', async (req: Request, res: Response): Promise<void> => {
@@ -130,18 +160,18 @@ router.get('/student/:studentId', async (req: Request, res: Response): Promise<v
     const studentId = req.params.studentId;
     const studentExist = await Student.findById(studentId);
     if (!studentExist) {
-     res.status(404).json({ error: 'الطالب غير موجود' });
+      res.status(404).json({ error: 'الطالب غير موجود' });
       return;
     }
 
     const attendances = await Attendance.find({ student: studentId })
       .populate('session', 'date');
 
-     res.status(200).json(attendances);
-     
+    res.status(200).json(attendances);
+
   } catch (error) {
-     res.status(500).json({ error: 'فشل في جلب حضور الطالب' });
-     return;
+    res.status(500).json({ error: 'فشل في جلب حضور الطالب' });
+    return;
   }
 });
 

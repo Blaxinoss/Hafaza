@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function HomeScreen(){
+export default function HomeScreen() {
   const router = useRouter();
 
   return (
@@ -19,10 +19,10 @@ export default function HomeScreen(){
         </ImageBackground>
 
         <View style={styles.bottomContainer}>
-          <TouchableOpacity onPress={() => router.push("/AttendanceScreen")}>
+          <TouchableOpacity onPress={() => router.push("/SessionAttendance")}>
             <Ionicons style={styles.icon} name="document-attach" size={32} color="white" />
           </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/Sessions")}>
+          <TouchableOpacity onPress={() => router.push("/Sessions")}>
             <Ionicons style={styles.icon} name="document-attach" size={32} color="white" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push("/AddPerson")}>
