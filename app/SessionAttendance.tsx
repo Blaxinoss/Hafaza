@@ -31,7 +31,7 @@ const SessionAttendance: React.FC = () => {
         const fetchAttendance = async () => {
             try {
                 const response = await axios.get(
-                    `http://192.168.1.106:3000/api/attendance/session/${sessionId}`
+                    `https://hafaza-xleq.vercel.app/api/attendance/session/${sessionId}`
                 );
                 setAttendances(response.data.attendances);
             } catch (error) {
@@ -48,7 +48,7 @@ const SessionAttendance: React.FC = () => {
     const handleSaveAbsents = async (attendanceId: string, isPresent: boolean) => {
         try {
             const res = await axios.patch(
-                `http://192.168.1.106:3000/api/attendance/attendance/${attendanceId}`,
+                `https://hafaza-xleq.vercel.app/api/attendance/attendance/${attendanceId}`,
                 { isPresent }
             );
 

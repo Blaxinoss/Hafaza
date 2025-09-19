@@ -38,7 +38,7 @@ export default function AddPerson() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get('http://192.168.1.106:3000/api/students');
+      const response = await axios.get('https://hafaza-xleq.vercel.app/api/students');
       setStudents(response.data);
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -59,7 +59,7 @@ export default function AddPerson() {
     setLoading(true);
 
     try {
-      await axios.post('http://192.168.1.106:3000/api/students', {
+      await axios.post('https://hafaza-xleq.vercel.app/api/students', {
         name,
         age: Number(age),
         phone,

@@ -28,7 +28,7 @@ const AttendanceScreenDetails: React.FC = () => {
     useEffect(() => {
         const fetchAttendance = async () => {
             try {
-                const res = await axios.get(`http://192.168.1.106:3000/api/attendance/attendance/${attendanceId}`);
+                const res = await axios.get(`https://hafaza-xleq.vercel.app/api/attendance/attendance/${attendanceId}`);
                 setEvaluation(res.data.attendance.evaluation || '');
                 setSurahs(
                     res.data.attendance.surahs.map((s: any) => ({
@@ -53,7 +53,7 @@ const AttendanceScreenDetails: React.FC = () => {
 
     const handleSave = async () => {
         try {
-            await axios.put(`http://192.168.1.106:3000/api/attendance/attendance/${attendanceId}`, {
+            await axios.put(`https://hafaza-xleq.vercel.app/api/attendance/attendance/${attendanceId}`, {
                 evaluation,
                 notes,
                 surahs: surahs.map(s => ({ ...s, fromAya: Number(s.fromAya), toAya: Number(s.toAya) })),

@@ -39,7 +39,7 @@ export default function Sessions() {
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://192.168.1.106:3000/api/sessions');
+      const res = await axios.get('https://hafaza-xleq.vercel.app/api/sessions');
       setSessions(res.data.sessions);
       setStudentsCount(res.data.studentCurrentCount);
       console.log(res.data);
@@ -129,7 +129,7 @@ export default function Sessions() {
     try {
       setLoading(true);
       const date = new Date();
-      const result = await axios.post('http://192.168.1.106:3000/api/sessions', { date });
+      const result = await axios.post('https://hafaza-xleq.vercel.app/api/sessions', { date });
 
       if (!result || !result.data) {
         Alert.alert('خطأ', 'فشل في إنشاء الجلسة');
