@@ -12,7 +12,7 @@ type RootStackParamList = {
         onUpdateCount: (id: string, becamePresent: boolean) => void;
     };
     SessionListScreen: undefined;
-    AttendanceScreenDetails: { attendanceId: string, name: string };
+    AttendanceScreenDetails: { attendanceId: string, name: string, handleSaveAbsents: (attendanceId: string, isPresent: boolean) => void };
 };
 
 type SessionAttendanceRouteProp = RouteProp<RootStackParamList, 'SessionAttendance'>;
@@ -138,6 +138,7 @@ const SessionAttendance: React.FC = () => {
                                 navigation.navigate('AttendanceScreenDetails', {
                                     attendanceId: item._id,
                                     name: item.student.name,
+                                    handleSaveAbsents,
                                 })
                             }
                         >

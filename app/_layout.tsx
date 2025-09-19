@@ -46,7 +46,7 @@ export default function RootLayout() {
         name="index"
         options={{
           title: "الشاشه الرئيسية",
-          headerStyle: { backgroundColor: "#11274c" }, // لون الخلفية
+          headerStyle: { backgroundColor: "#141618ff" }, // لون الخلفية
           headerTintColor: "#ffffff", // لون النص
           headerTitleStyle: { fontWeight: "bold" },
           headerTitleAlign: "center",

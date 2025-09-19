@@ -5,14 +5,14 @@ import axios from 'axios';
 import React from 'react';
 
 type RootStackParamList = {
-    AttendanceScreenDetails: { attendanceId: string, name: string };
+    AttendanceScreenDetails: { attendanceId: string, name: string, handleSaveAbsents: (attendanceId: string, isPresent: boolean) => void };
 };
 
 type AttendanceRouteProp = RouteProp<RootStackParamList, 'AttendanceScreenDetails'>;
 
 const AttendanceScreenDetails: React.FC = () => {
     const route = useRoute<AttendanceRouteProp>();
-    const { attendanceId, name } = route.params;
+    const { attendanceId, name, handleSaveAbsents } = route.params;
 
     const [evaluation, setEvaluation] = useState<string>('');
     const [surahs, setSurahs] = useState<{ name: string; fromAya: string; toAya: string }[]>([]);
@@ -58,6 +58,7 @@ const AttendanceScreenDetails: React.FC = () => {
                 notes,
                 surahs: surahs.map(s => ({ ...s, fromAya: Number(s.fromAya), toAya: Number(s.toAya) })),
             });
+            // handleSaveAbsents(attendanceId, true)
             alert('تم حفظ البيانات بنجاح');
         } catch (err) {
             console.error(err);
@@ -89,14 +90,7 @@ const AttendanceScreenDetails: React.FC = () => {
             <Text style={styles.label}>السور المحفوظة</Text>
             {surahs.map((s, index) => (
                 <View key={index} style={styles.surahRow}>
-                    <TextInput
-                        placeholder="من آية"
-                        style={styles.input}
-                        keyboardType="numeric"
-                        placeholderTextColor={"#979797"}
-                        value={s.fromAya}
-                        onChangeText={text => handleSurahChange(index, 'fromAya', text)}
-                    />
+
                     <TextInput
                         placeholder="إلى آية"
                         style={styles.input}
@@ -105,6 +99,14 @@ const AttendanceScreenDetails: React.FC = () => {
 
                         value={s.toAya}
                         onChangeText={text => handleSurahChange(index, 'toAya', text)}
+                    />
+                    <TextInput
+                        placeholder="من آية"
+                        style={styles.input}
+                        keyboardType="numeric"
+                        placeholderTextColor={"#979797"}
+                        value={s.fromAya}
+                        onChangeText={text => handleSurahChange(index, 'fromAya', text)}
                     />
                     <TextInput
                         placeholder="اسم السورة"

@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   header: {
     color: 'white', // Use white text for high contrast against dark overlay
-    fontSize: 16,
+    fontSize: 10,
     fontFamily: "MainFont",
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.75)', // Text shadow for clarity
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   bottomContainer: {
     bottom: 0,
     width: "100%",
-    backgroundColor: "#11274c", // Black background for bottom container
+    backgroundColor: "#141618ff", // Black background for bottom container
     height: 60,
     flexDirection: "row",
     justifyContent: "space-around", // Space icons evenly
