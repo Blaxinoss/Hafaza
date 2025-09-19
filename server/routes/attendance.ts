@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express'
+import type { Request, Response } from 'express';
 import Attendance from '../models/Attendances.js';
 import Student from '../models/students.js';
 import Session from '../models/sessions.js';

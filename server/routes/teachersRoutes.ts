@@ -1,12 +1,13 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
-import Teacher, { ITeacher } from '../models/teachers.js';
-
+import Teacher from '../models/teachers.js';
+import type { ITeacher } from '../models/teachers.js';
 const router = express.Router();
 
 // استخدم express.Request و express.Response مباشرة
-router.get('/', async (req: Request, res: Response) :Promise<void>=> {
+router.get('/', async (req: Request, res: Response): Promise<void> => {
     try {
         const teachers = await Teacher.find();
         res.status(200).json(teachers);
@@ -16,7 +17,7 @@ router.get('/', async (req: Request, res: Response) :Promise<void>=> {
     }
 });
 
-router.post('/', async (req: Request, res: Response):Promise<void> => {
+router.post('/', async (req: Request, res: Response): Promise<void> => {
     try {
         const teacherData: ITeacher = req.body;
         const newTeacher = new Teacher(teacherData);
@@ -28,9 +29,13 @@ router.post('/', async (req: Request, res: Response):Promise<void> => {
     }
 });
 
-router.delete('/:id', async (req: Request, res: Response):Promise<void> => {
+router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
+        if (!id) {
+            res.status(400).json({ message: "لا يوجد رقم معرف متاح بهذا الشكل" });
+            return;
+        }
         if (!mongoose.Types.ObjectId.isValid(id)) {
             res.status(400).json({ message: "لا يوجد معلم برقم المعرف هذا" });
             return;
@@ -43,13 +48,17 @@ router.delete('/:id', async (req: Request, res: Response):Promise<void> => {
             throw new Error("لا يوجد معلم بهذه البيانات");
         }
     } catch (error) {
-        res.status(500).json({ message: "حدث خطأ أثناء مسح هذا المعلم" ,error});
+        res.status(500).json({ message: "حدث خطأ أثناء مسح هذا المعلم", error });
     }
 });
 
-router.put('/:id', async (req: Request, res: Response) :Promise<void>=> {
+router.put('/:id', async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
+        if (!id) {
+            res.status(400).json({ message: "لا يوجد رقم معرف متاح بهذا الشكل" });
+            return;
+        }
         if (!mongoose.Types.ObjectId.isValid(id)) {
             res.status(400).json({ message: "لا يوجد معلم برقم المعرف هذا" });
             return;
@@ -57,8 +66,8 @@ router.put('/:id', async (req: Request, res: Response) :Promise<void>=> {
 
         const updatedTeacher = await Teacher.findByIdAndUpdate(id, req.body, { new: true });
         if (!updatedTeacher) {
-          res.status(404).json({ message: "المعلم غير موجود" });
-          return;
+            res.status(404).json({ message: "المعلم غير موجود" });
+            return;
         }
         res.status(200).json(updatedTeacher);
     } catch (error) {

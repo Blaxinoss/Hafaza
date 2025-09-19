@@ -82,6 +82,21 @@ export default function RootLayout() {
       />
 
 
+      <Stack.Screen
+
+        name="SessionAttendance"
+        options={{
+          title: "الجلسة",
+          headerStyle: { backgroundColor: '#0f1c2b' },
+          contentStyle: {
+            backgroundColor: '#235374' // ✅ منع الخلفية البيضاء عند الـ scroll
+          },
+        }}
+      />
+
+
+
+
 
 
       <Stack.Screen
@@ -89,7 +104,7 @@ export default function RootLayout() {
         options={{
           title: "إضافة أعضاء",
           headerStyle: {
-            backgroundColor: '#235374', // ✅ نفس لون الخلفية للتناسق
+            backgroundColor: '#0f1c2b', // ✅ نفس لون الخلفية للتناسق
           },
           headerTintColor: '#FFFFFF', // ✅ أبيض خالص
           headerTitleStyle: {

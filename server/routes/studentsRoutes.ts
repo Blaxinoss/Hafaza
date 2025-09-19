@@ -1,11 +1,13 @@
-import express, { Request, Response } from 'express';
+import express from 'express'
+import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import Student, { IStudent } from '../models/students'; // تأكد من أن لديك موديل الطلاب
+import Student from '../models/students';
+import type { IStudent } from '../models/students' // تأكد من أن لديك موديل الطلاب
 
 const router = express.Router();
 
-router.get('/', async (req: Request, res: Response): Promise<void> => {   
-     try {
+router.get('/', async (req: Request, res: Response): Promise<void> => {
+    try {
         const students = await Student.find();
         res.status(200).json(students);
     } catch (error) {
@@ -27,6 +29,10 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 router.put('/:id', async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
+        if (!id) {
+            res.status(400).json({ message: "لا يوجد رقم معرف متاح بهذا الشكل" });
+            return;
+        }
         if (!mongoose.Types.ObjectId.isValid(id)) {
             res.status(400).json({ message: "لا يوجد طالب برقم المعرف هذا" });
             return;
@@ -45,6 +51,10 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
 router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
+        if (!id) {
+            res.status(400).json({ message: "لا يوجد رقم معرف متاح بهذا الشكل" });
+            return;
+        }
         if (!mongoose.Types.ObjectId.isValid(id)) {
             res.status(400).json({ message: "لا يوجد طالب برقم المعرف هذا" });
             return;

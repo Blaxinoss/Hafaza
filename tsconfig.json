@@ -18,5 +18,8 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-, "server/server.js", "server/server.js"  ]
+  ],
+  "exclude": [
+    "server"
+  ]
 }

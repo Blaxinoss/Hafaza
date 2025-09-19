@@ -1,6 +1,8 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
-import express, { Application, Request, Response } from 'express';
+import express from 'express';
+import type { Application, Request, Response } from 'express';
+
 import mongoose from 'mongoose';
 import studentsRoute from './routes/studentsRoutes.js';
 import teachersRoute from './routes/teachersRoutes.js';
@@ -20,7 +22,7 @@ const port: string | number = process.env.PORT || 3000;
 
 mongoose.connect(process.env.MONGO_URI as string)
     .then(() => console.log("MongoDB connected"))
-    .catch((err) => console.log(err));
+    .catch((err: any) => console.log(err));
 
 app.get('/', (req: Request, res: Response) => {
     res.send("Hello, World!");
