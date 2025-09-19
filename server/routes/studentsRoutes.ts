@@ -1,8 +1,8 @@
 import express from 'express'
 import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import Student from '../models/students';
-import type { IStudent } from '../models/students' // تأكد من أن لديك موديل الطلاب
+import Student from '../models/students.js';
+import type { IStudent } from '../models/students.js' // تأكد من أن لديك موديل الطلاب
 
 const router = express.Router();
 
