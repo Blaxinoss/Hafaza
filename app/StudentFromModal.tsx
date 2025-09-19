@@ -27,7 +27,7 @@ const StudentFormModal: React.FC<Props> = ({ visible, onClose, onSuccess }) => {
     if (!name || !age || !phone) return;
     setLoading(true);
     try {
-      await axios.post('http://localhost:3000/api/students', {
+      await axios.post('http://192.168.1.106:3000/api/students', {
         name,
         age: Number(age),
         phone,

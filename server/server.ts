@@ -34,6 +34,6 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/teachers', teachersRoute);
 app.use('/api/students', studentsRoute);
 
-app.listen(port, () => {
+app.listen(Number(port), "0.0.0.0", () => {
     console.log("Server listening on port", port);
 });

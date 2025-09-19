@@ -19,9 +19,7 @@ export default function HomeScreen() {
         </ImageBackground>
 
         <View style={styles.bottomContainer}>
-          <TouchableOpacity onPress={() => router.push("/SessionAttendance")}>
-            <Ionicons style={styles.icon} name="document-attach" size={32} color="white" />
-          </TouchableOpacity>
+
           <TouchableOpacity onPress={() => router.push("/Sessions")}>
             <Ionicons style={styles.icon} name="document-attach" size={32} color="white" />
           </TouchableOpacity>
@@ -44,21 +42,21 @@ const styles = StyleSheet.create({
     flex: 1, // Ensures the entire screen is filled
   },
   background: {
+    flex: 1,
     justifyContent: "center",
-    alignContent: "center",
+    alignItems: "center",
     width: "100%",
-    height: 750,
-    position: "absolute",
   },
   textWrapper: {
     alignItems: "center", // Centers text horizontally
     justifyContent: "center", // Centers text vertically
     zIndex: 1,
-    gap: "10px"
+    flex: 1,
+    paddingBottom: 20,
   },
   header: {
     color: 'white', // Use white text for high contrast against dark overlay
-    fontSize: 28,
+    fontSize: 16,
     fontFamily: "MainFont",
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.75)', // Text shadow for clarity
@@ -69,6 +67,7 @@ const styles = StyleSheet.create({
     color: 'gold',
     fontSize: 14, // Slightly larger for readability
     textAlign: 'center',
+    fontFamily: 'Arial',
     textShadowColor: 'rgba(0, 0, 0, 0.75)', // Adds shadow to paragraph text
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
@@ -82,7 +81,6 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   bottomContainer: {
-    position: "absolute",
     bottom: 0,
     width: "100%",
     backgroundColor: "#11274c", // Black background for bottom container
