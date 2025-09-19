@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   header: {
     color: 'white', // Use white text for high contrast against dark overlay
-    fontSize: 10,
+    fontSize: 16,
     fontFamily: "MainFont",
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.75)', // Text shadow for clarity
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   },
   mainWord: {
     color: '#eeff12',
-    fontSize: 28, // Slightly larger for readability
+    fontSize: 30, // Slightly larger for readability
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.75)', // Adds shadow to paragraph text
     textShadowOffset: { width: 1, height: 1 },
