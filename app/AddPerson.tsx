@@ -9,9 +9,12 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Pressable,
+  Keyboard,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { baseUrl } from "../context/constants";
 
 interface Student {
   name: string;
@@ -38,7 +41,7 @@ export default function AddPerson() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get('https://hafaza-xleq.vercel.app/api/students');
+      const response = await axios.get(`${baseUrl}/api/students`);
       setStudents(response.data);
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -59,7 +62,7 @@ export default function AddPerson() {
     setLoading(true);
 
     try {
-      await axios.post('https://hafaza-xleq.vercel.app/api/students', {
+      await axios.post(`${baseUrl}/api/students`, {
         name,
         age: Number(age),
         phone,
@@ -81,67 +84,6 @@ export default function AddPerson() {
     }
   };
 
-  const renderHeader = () => (
-    <View className="" style={styles.headerContainer}>
-      <Text style={styles.title}>إضافة طالب جديد</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="الاسم"
-        value={name}
-        placeholderTextColor="#999"
-        onChangeText={setName}
-        textAlign="right"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="العمر"
-        value={age}
-        onChangeText={setAge}
-        placeholderTextColor="#999"
-        keyboardType="numeric"
-        textAlign="right"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="رقم الهاتف"
-        value={phone}
-        onChangeText={setPhone}
-        placeholderTextColor="#999"
-        keyboardType="phone-pad"
-        textAlign="right"
-      />
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleAddStudent}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>إضافة</Text>
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.push('/')}>
-        <Text style={styles.backText}>رجوع إلى الصفحة الرئيسية</Text>
-      </TouchableOpacity>
-
-      <TextInput
-        style={styles.searchInput}
-        placeholder="🔍 أبحث عن شخص معين"
-        value={searchWord}
-        onChangeText={setSearchWord}
-        placeholderTextColor="#999"
-        textAlign="right"
-      />
-
-    </View>
-  );
-
   const renderStudent = ({ item }: { item: Student }) => (
     <View style={styles.studentCard}>
       <Text style={styles.studentName}>{item.name}</Text>
@@ -157,21 +99,83 @@ export default function AddPerson() {
   );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={filteredList}
-        keyExtractor={(item) => item._id}
-        numColumns={2}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyList}
-        renderItem={renderStudent}
-        contentContainerStyle={styles.flatListContent}
-        showsVerticalScrollIndicator={true}
-        keyboardShouldPersistTaps="handled"
-        removeClippedSubviews={false}
-        columnWrapperStyle={filteredList.length > 0 ? styles.row : undefined}
-      />
-    </View>
+    <Pressable className="flex-1" onPress={() => {
+      Keyboard.dismiss();
+    }}>
+      <View style={styles.container}>
+        {/* القسم العلوي: ثابت ولا يتأثر بـ re-render القائمة */}
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>إضافة طالب جديد</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="الاسم"
+            value={name}
+            placeholderTextColor="#999"
+            onChangeText={setName}
+            textAlign="right"
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="العمر"
+            value={age}
+            onChangeText={setAge}
+            placeholderTextColor="#999"
+            keyboardType="numeric"
+            textAlign="right"
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="رقم الهاتف"
+            value={phone}
+            onChangeText={setPhone}
+            placeholderTextColor="#999"
+            keyboardType="phone-pad"
+            textAlign="right"
+          />
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleAddStudent}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>إضافة</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push('/')}>
+            <Text style={styles.backText}>رجوع إلى الصفحة الرئيسية</Text>
+          </TouchableOpacity>
+
+          <TextInput
+            style={styles.searchInput}
+            placeholder="🔍 أبحث عن شخص معين"
+            value={searchWord}
+            onChangeText={setSearchWord}
+            placeholderTextColor="#999"
+            textAlign="right"
+          />
+        </View>
+
+        {/* 2. الـ FlatList تعرض البيانات فقط */}
+        <FlatList
+          data={filteredList}
+          keyExtractor={(item) => item._id}
+          numColumns={2}
+          ListEmptyComponent={renderEmptyList}
+          renderItem={renderStudent}
+          contentContainerStyle={styles.flatListContent}
+          showsVerticalScrollIndicator={true}
+          keyboardShouldPersistTaps="handled"
+          columnWrapperStyle={filteredList.length > 0 ? styles.row : undefined}
+        />
+      </View>
+    </Pressable>
   );
 }
 const styles = StyleSheet.create({

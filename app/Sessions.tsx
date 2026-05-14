@@ -14,6 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { baseUrl } from "../context/constants";
 
 interface Session {
   _id: string;
@@ -39,7 +40,7 @@ export default function Sessions() {
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('https://hafaza-xleq.vercel.app/api/sessions');
+      const res = await axios.get(`${baseUrl}/api/sessions`);
       setSessions(res.data.sessions);
       setStudentsCount(res.data.studentCurrentCount);
       console.log(res.data);
@@ -129,7 +130,7 @@ export default function Sessions() {
     try {
       setLoading(true);
       const date = new Date();
-      const result = await axios.post('https://hafaza-xleq.vercel.app/api/sessions', { date });
+      const result = await axios.post(`${baseUrl}/api/sessions`, { date });
 
       if (!result || !result.data) {
         Alert.alert('خطأ', 'فشل في إنشاء الجلسة');

@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
+import { baseUrl } from "../context/constants";
+
 
 type Props = {
   visible: boolean;
@@ -27,7 +29,7 @@ const StudentFormModal: React.FC<Props> = ({ visible, onClose, onSuccess }) => {
     if (!name || !age || !phone) return;
     setLoading(true);
     try {
-      await axios.post('https://hafaza-xleq.vercel.app/api/students', {
+      await axios.post(`${baseUrl}/api/students`, {
         name,
         age: Number(age),
         phone,

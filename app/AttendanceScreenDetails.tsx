@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, I18nManager } from 'react-native';
 import axios from 'axios';
 import React from 'react';
+import { baseUrl } from "../context/constants";
 
 type RootStackParamList = {
     AttendanceScreenDetails: { attendanceId: string, name: string, handleSaveAbsents: (attendanceId: string, isPresent: boolean) => void };
@@ -28,7 +29,7 @@ const AttendanceScreenDetails: React.FC = () => {
     useEffect(() => {
         const fetchAttendance = async () => {
             try {
-                const res = await axios.get(`https://hafaza-xleq.vercel.app/api/attendance/attendance/${attendanceId}`);
+                const res = await axios.get(`${baseUrl}/api/attendance/attendance/${attendanceId}`);
                 setEvaluation(res.data.attendance.evaluation || '');
                 setSurahs(
                     res.data.attendance.surahs.map((s: any) => ({
@@ -53,7 +54,7 @@ const AttendanceScreenDetails: React.FC = () => {
 
     const handleSave = async () => {
         try {
-            await axios.put(`https://hafaza-xleq.vercel.app/api/attendance/attendance/${attendanceId}`, {
+            await axios.put(`${baseUrl}/api/attendance/attendance/${attendanceId}`, {
                 evaluation,
                 notes,
                 surahs: surahs.map(s => ({ ...s, fromAya: Number(s.fromAya), toAya: Number(s.toAya) })),

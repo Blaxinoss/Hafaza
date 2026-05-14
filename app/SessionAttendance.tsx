@@ -5,6 +5,8 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { StudentAttendance } from '../types/types';
+import { baseUrl } from "../context/constants";
+
 
 type RootStackParamList = {
     SessionAttendance: {
@@ -31,7 +33,7 @@ const SessionAttendance: React.FC = () => {
         const fetchAttendance = async () => {
             try {
                 const response = await axios.get(
-                    `https://hafaza-xleq.vercel.app/api/attendance/session/${sessionId}`
+                    `${baseUrl}/api/attendance/session/${sessionId}`
                 );
                 setAttendances(response.data.attendances);
             } catch (error) {
@@ -48,7 +50,7 @@ const SessionAttendance: React.FC = () => {
     const handleSaveAbsents = async (attendanceId: string, isPresent: boolean) => {
         try {
             const res = await axios.patch(
-                `https://hafaza-xleq.vercel.app/api/attendance/attendance/${attendanceId}`,
+                `${baseUrl}/api/attendance/attendance/${attendanceId}`,
                 { isPresent }
             );
 
