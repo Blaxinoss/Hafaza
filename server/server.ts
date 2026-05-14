@@ -4,10 +4,10 @@ import express from 'express';
 import type { Application, Request, Response, NextFunction } from 'express';
 
 import mongoose from 'mongoose';
-import studentsRoute from './routes/studentsRoutes';
-import teachersRoute from './routes/teachersRoutes';
-import attendanceRoutes from './routes/attendance';
-import sessionRoutes from './routes/sessions';
+import studentsRoute from './routes/studentsRoutes.js';
+import teachersRoute from './routes/teachersRoutes.js';
+import attendanceRoutes from './routes/attendance.js';
+import sessionRoutes from './routes/sessions.js';
 
 
 dotenv.config();
