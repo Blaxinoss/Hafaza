@@ -10,6 +10,11 @@ export interface StudentAttendance {
         sessions?: string[];
         lastAttendance?: string;
     };
+    teacher?: {
+        _id: string;
+        name: string;
+        phone?: string;
+    };
     isPresent: boolean;
     evaluation?: "ممتاز" | "جيد جدًا" | "جيد" | "ضعيف";
     surahs?: { name: string; fromAya: number; toAya: number }[];

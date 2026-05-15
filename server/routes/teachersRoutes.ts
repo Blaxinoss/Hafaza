@@ -6,6 +6,57 @@ import Teacher from '../models/teachers.js';
 import type { ITeacher } from '../models/teachers.js';
 const router = express.Router();
 
+router.get('/search', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const name = (req.query.name as string || '').trim();
+        const phone = (req.query.phone as string || '').trim();
+
+        if (!name && !phone) {
+            res.status(400).json({ message: 'يرجى إدخال الاسم أو الهاتف للبحث' });
+            return;
+        }
+
+        const query: any = {};
+        if (phone) {
+            query.phone = phone;
+        }
+        if (name) {
+            query.name = { $regex: name, $options: 'i' };
+        }
+
+        const teachers = await Teacher.find(query).sort({ createdAt: -1 }).limit(20);
+        res.status(200).json(teachers);
+        return;
+    } catch (error) {
+        res.status(500).json({ message: 'حدث خطأ أثناء البحث عن المعلم', error });
+    }
+});
+
+router.post('/find-or-create', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const name = (req.body.name || '').trim();
+        const phone = (req.body.phone || '').trim();
+
+        if (!name || !phone) {
+            res.status(400).json({ message: 'الاسم ورقم الهاتف مطلوبان' });
+            return;
+        }
+
+        const existingTeacher = await Teacher.findOne({ $or: [{ phone }, { name }] });
+        if (existingTeacher) {
+            res.status(200).json({ exists: true, teacher: existingTeacher });
+            return;
+        }
+
+        const newTeacher = new Teacher({ name, phone });
+        await newTeacher.save();
+        res.status(201).json({ exists: false, teacher: newTeacher });
+        return;
+    } catch (error) {
+        res.status(500).json({ message: 'حدث خطأ أثناء إضافة المعلم', error });
+    }
+});
+
 // استخدم express.Request و express.Response مباشرة
 router.get('/', async (req: Request, res: Response): Promise<void> => {
     try {

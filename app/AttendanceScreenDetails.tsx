@@ -5,6 +5,12 @@ import axios from 'axios';
 import React from 'react';
 import { baseUrl } from "../context/constants";
 
+interface Teacher {
+    _id: string;
+    name: string;
+    phone?: string;
+}
+
 type RootStackParamList = {
     AttendanceScreenDetails: { attendanceId: string, name: string, handleSaveAbsents: (attendanceId: string, isPresent: boolean) => void };
 };
@@ -13,37 +19,47 @@ type AttendanceRouteProp = RouteProp<RootStackParamList, 'AttendanceScreenDetail
 
 const AttendanceScreenDetails: React.FC = () => {
     const route = useRoute<AttendanceRouteProp>();
-    const { attendanceId, name, handleSaveAbsents } = route.params;
+    const { attendanceId, name } = route.params;
 
     const [evaluation, setEvaluation] = useState<string>('');
     const [surahs, setSurahs] = useState<{ name: string; fromAya: string; toAya: string }[]>([]);
     const [notes, setNotes] = useState<string>('');
+    const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [teacherId, setTeacherId] = useState<string>('');
 
     const evaluationOptions = [
-        { label: 'ممتاز', color: '#2ecc71' }, // أخضر
-        { label: 'جيد جدًا', color: '#3498db' }, // أزرق
-        { label: 'جيد', color: '#ecc527' }, // أصفر
-        { label: 'ضعيف', color: '#e74c3c' }, // أحمر
+        { label: 'ممتاز', color: '#2ecc71' },
+        { label: 'جيد جدًا', color: '#3498db' },
+        { label: 'جيد', color: '#ecc527' },
+        { label: 'ضعيف', color: '#e74c3c' },
     ];
 
     useEffect(() => {
-        const fetchAttendance = async () => {
+        const fetchAttendanceAndTeachers = async () => {
             try {
-                const res = await axios.get(`${baseUrl}/api/attendance/attendance/${attendanceId}`);
-                setEvaluation(res.data.attendance.evaluation || '');
+                const [attendanceRes, teachersRes] = await Promise.all([
+                    axios.get(`${baseUrl}/api/attendance/attendance/${attendanceId}`),
+                    axios.get(`${baseUrl}/api/teachers`),
+                ]);
+
+                const attendance = attendanceRes.data.attendance;
+                setEvaluation(attendance.evaluation || '');
                 setSurahs(
-                    res.data.attendance.surahs.map((s: any) => ({
+                    attendance.surahs.map((s: any) => ({
                         ...s,
                         fromAya: s.fromAya?.toString() || '',
                         toAya: s.toAya?.toString() || '',
                     }))
                 );
-                setNotes(res.data.attendance.notes || '');
+                setNotes(attendance.notes || '');
+                setTeacherId(attendance.teacher?._id || '');
+                setTeachers(teachersRes.data || []);
             } catch (err) {
                 console.error(err);
             }
         };
-        fetchAttendance();
+
+        fetchAttendanceAndTeachers();
     }, [attendanceId]);
 
     const handleSurahChange = (index: number, field: 'name' | 'fromAya' | 'toAya', value: string) => {
@@ -53,13 +69,18 @@ const AttendanceScreenDetails: React.FC = () => {
     const handleAddSurah = () => setSurahs(prev => [...prev, { name: '', fromAya: '', toAya: '' }]);
 
     const handleSave = async () => {
+        if (!teacherId) {
+            alert('من فضلك اختر المعلم المسؤول أولًا');
+            return;
+        }
+
         try {
             await axios.put(`${baseUrl}/api/attendance/attendance/${attendanceId}`, {
+                teacherId,
                 evaluation,
                 notes,
                 surahs: surahs.map(s => ({ ...s, fromAya: Number(s.fromAya), toAya: Number(s.toAya) })),
             });
-            // handleSaveAbsents(attendanceId, true)
             alert('تم حفظ البيانات بنجاح');
         } catch (err) {
             console.error(err);
@@ -70,6 +91,22 @@ const AttendanceScreenDetails: React.FC = () => {
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.label2}>{name}</Text>
+
+            <Text style={styles.label}>المعلم المسؤول</Text>
+            {teachers.length === 0 && <Text style={styles.helperText}>لا يوجد معلمون. أضف معلمًا أولًا.</Text>}
+            {teachers.map((teacher) => {
+                const selected = teacher._id === teacherId;
+                return (
+                    <TouchableOpacity
+                        key={teacher._id}
+                        style={[styles.teacherOption, selected && styles.teacherOptionSelected]}
+                        onPress={() => setTeacherId(teacher._id)}
+                    >
+                        <Text style={[styles.teacherName, selected && styles.teacherSelectedText]}>{teacher.name}</Text>
+                        <Text style={[styles.teacherPhone, selected && styles.teacherSelectedText]}>{teacher.phone || '-'}</Text>
+                    </TouchableOpacity>
+                );
+            })}
 
             <Text style={styles.label}>التقييم</Text>
             {evaluationOptions.map(opt => (
@@ -97,7 +134,6 @@ const AttendanceScreenDetails: React.FC = () => {
                         style={styles.input}
                         keyboardType="numeric"
                         placeholderTextColor={"#979797"}
-
                         value={s.toAya}
                         onChangeText={text => handleSurahChange(index, 'toAya', text)}
                     />
@@ -113,7 +149,6 @@ const AttendanceScreenDetails: React.FC = () => {
                         placeholder="اسم السورة"
                         style={styles.input}
                         placeholderTextColor={"#979797"}
-
                         value={s.name}
                         onChangeText={text => handleSurahChange(index, 'name', text)}
                     />
@@ -144,9 +179,9 @@ export default AttendanceScreenDetails;
 const styles = StyleSheet.create({
     container: {
         padding: 20,
-        backgroundColor: '#143d6b', // خلفية فاتحة هادية
+        backgroundColor: '#143d6b',
         flex: 1,
-        direction: I18nManager.isRTL ? 'rtl' : 'ltr', // من اليمين لليسار
+        direction: I18nManager.isRTL ? 'rtl' : 'ltr',
     },
     label: {
         fontSize: 18,
@@ -164,10 +199,45 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         textAlign: 'center',
         color: '#ffffff',
-        paddingHorizontal: 14, // بادينج يمين وشمال
-        paddingVertical: 8,    // بادينج فوق وتحت
-        borderRadius: 12,      // راوندد // ياخد عرض على قد النص
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 12,
         alignSelf: 'center'
+    },
+
+
+
+
+
+    helperText: {
+        color: '#ffd08a',
+        textAlign: 'right',
+        marginBottom: 8,
+    },
+    teacherOption: {
+        borderWidth: 1,
+        borderColor: '#8ab8e0',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 8,
+        backgroundColor: '#ffffff',
+    },
+    teacherOptionSelected: {
+        backgroundColor: '#2e86de',
+        borderColor: '#2e86de',
+    },
+    teacherName: {
+        textAlign: 'right',
+        color: '#1f2d3d',
+        fontWeight: '700',
+    },
+    teacherPhone: {
+        textAlign: 'right',
+        color: '#5D6D7E',
+        marginTop: 4,
+    },
+    teacherSelectedText: {
+        color: '#ffffff',
     },
     input: {
         borderWidth: 1,

@@ -26,6 +26,9 @@ export default function HomeScreen() {
           <TouchableOpacity onPress={() => router.push("/AddPerson")}>
             <Ionicons style={styles.icon} name="person-add" size={32} color="white" />
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/AddTeacher" as never)}>
+            <Ionicons style={styles.icon} name="school" size={32} color="white" />
+          </TouchableOpacity>
         </View>
 
       </View>

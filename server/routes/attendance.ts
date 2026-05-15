@@ -2,6 +2,7 @@ import express from 'express'
 import type { Request, Response } from 'express';
 import Attendance from '../models/Attendances.js';
 import Student from '../models/students.js';
+import Teacher from '../models/teachers.js';
 import Session from '../models/sessions.js';
 
 /* This code snippet is defining a route in an Express router to handle adding new attendance records.
@@ -22,7 +23,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
     for (const entry of entries) {
       console.log(entry)
-      const { studentId, sessionId, isPresent, evaluation, surahs, notes } = entry;
+      const { studentId, teacherId, sessionId, isPresent, evaluation, surahs, notes } = entry;
 
 
       if (!studentId) {
@@ -35,7 +36,16 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         return
       }
 
-      const updated = await Attendance.findOneAndUpdate({ student: studentId, session: sessionId }, { isPresent, evaluation, surahs, notes }, { new: true })
+      const updatePayload: any = { isPresent, evaluation, surahs, notes };
+      if (teacherId) {
+        updatePayload.teacher = teacherId;
+      }
+
+      const updated = await Attendance.findOneAndUpdate(
+        { student: studentId, session: sessionId },
+        updatePayload,
+        { new: true }
+      )
 
       if (!updated) {
         res.status(404).json({ error: 'الحضور غير موجود لهذا الطالب في هذه الجلسة' });
@@ -53,7 +63,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 
-// ✅ استعلام عن حضور طلاب لجلسة معينة
+// ✅ استعلام عن حضور طلاب لجلسة معينة مع المعلم المسؤول
 router.get('/session/:sessionId', async (req: Request, res: Response): Promise<void> => {
   try {
     const sessionId = req.params.sessionId;
@@ -65,7 +75,8 @@ router.get('/session/:sessionId', async (req: Request, res: Response): Promise<v
     }
 
     const attendances = await Attendance.find({ session: sessionId })
-      .populate('student');
+      .populate('student')
+      .populate('teacher');
 
     res.status(200).json({
       sessionId,
@@ -86,6 +97,7 @@ router.get('/attendance/:attendanceId', async (req: Request, res: Response): Pro
 
     const attendance = await Attendance.findById(attendanceId)
       .populate('student')   // بيانات الطالب
+      .populate('teacher')
       .populate('session');  // بيانات الجلسة لو محتاج
 
     if (!attendance) {
@@ -107,13 +119,30 @@ router.get('/attendance/:attendanceId', async (req: Request, res: Response): Pro
 router.put('/attendance/:attendanceId', async (req: Request, res: Response): Promise<void> => {
   try {
     const attendanceId = req.params.attendanceId;
-    const { isPresent, evaluation, surahs, notes } = req.body;
+    const { isPresent, evaluation, surahs, notes, teacherId } = req.body;
+
+    const updatePayload: any = {};
+    if (typeof isPresent !== 'undefined') {
+      updatePayload.isPresent = isPresent;
+    }
+    if (typeof evaluation !== 'undefined') {
+      updatePayload.evaluation = evaluation;
+    }
+    if (typeof surahs !== 'undefined') {
+      updatePayload.surahs = surahs;
+    }
+    if (typeof notes !== 'undefined') {
+      updatePayload.notes = notes;
+    }
+    if (teacherId) {
+      updatePayload.teacher = teacherId;
+    }
 
     const updatedAttendance = await Attendance.findByIdAndUpdate(
       attendanceId,
-      { isPresent, evaluation, surahs, notes },
+      updatePayload,
       { new: true }
-    ).populate('student session');
+    ).populate('student teacher session');
 
     if (!updatedAttendance) {
       res.status(404).json({ error: 'سجل الحضور غير موجود' });
@@ -172,6 +201,26 @@ router.get('/student/:studentId', async (req: Request, res: Response): Promise<v
 
   } catch (error) {
     res.status(500).json({ error: 'فشل في جلب حضور الطالب' });
+    return;
+  }
+});
+
+// ✅ استعلام عن حضور معلم معين
+router.get('/teacher/:teacherId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const teacherId = req.params.teacherId;
+    const teacherExist = await Teacher.findById(teacherId);
+    if (!teacherExist) {
+      res.status(404).json({ error: 'المعلم غير موجود' });
+      return;
+    }
+
+    const attendances = await Attendance.find({ teacher: teacherId })
+      .populate('session', 'date');
+
+    res.status(200).json(attendances);
+  } catch (error) {
+    res.status(500).json({ error: 'فشل في جلب حضور المعلم' });
     return;
   }
 });

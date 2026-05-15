@@ -32,9 +32,7 @@ const SessionAttendance: React.FC = () => {
     useEffect(() => {
         const fetchAttendance = async () => {
             try {
-                const response = await axios.get(
-                    `${baseUrl}/api/attendance/session/${sessionId}`
-                );
+                const response = await axios.get(`${baseUrl}/api/attendance/session/${sessionId}`);
                 setAttendances(response.data.attendances);
             } catch (error) {
                 console.error('Error fetching attendance:', error);
@@ -97,22 +95,22 @@ const SessionAttendance: React.FC = () => {
                 <View style={{ backgroundColor: '#e7f2f8' }} className="p-5 mb-4 rounded-2xl shadow-md border border-gray-100 ">
 
                     <View className='flex items-end'>
-                        {/* اسم الطالب */}
                         <Text className="text-lg font-bold text-gray-800 mb-2">
                             {item.student.name}
                         </Text>
 
-                        {/* بيانات إضافية لو متاحة */}
                         {item.student.phone && (
                             <Text className="text-sm text-gray-500 mb-1">
                                 الهاتف: {item.student.phone}
                             </Text>
                         )}
 
+                        <Text className="text-sm text-gray-700 mb-2">
+                            المعلم: {item.teacher?.name || 'غير محدد'}
+                        </Text>
                     </View>
 
                     <View className="flex-row items-center justify-between mt-3">
-                        {/* حالة الحضور */}
                         <TouchableOpacity
                             className={`flex-row items-center px-4 py-2 rounded-full ${item.isPresent ? 'bg-green-600' : 'bg-red-600'
                                 }`}
@@ -133,7 +131,8 @@ const SessionAttendance: React.FC = () => {
                             </Text>
                         </TouchableOpacity>
 
-                        {/* زر التفاصيل */}
+
+
                         <TouchableOpacity
                             className="flex-row items-center px-4 py-2 bg-blue-500 rounded-lg shadow-md"
                             onPress={() =>

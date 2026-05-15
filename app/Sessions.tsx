@@ -120,7 +120,35 @@ export default function Sessions() {
             </Text>
           </View>
 
-          <Ionicons name="chevron-back" size={16} color="#235374" />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity onPress={async () => {
+              // navigate handled by outer TouchableOpacity
+            }}>
+              <Ionicons name="chevron-back" size={16} color="#235374" />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => {
+              Alert.alert('تأكيد الحذف', 'هل أنت متأكد من حذف هذه الجلسة؟', [
+                { text: 'إلغاء', style: 'cancel' },
+                {
+                  text: 'حذف', style: 'destructive', onPress: async () => {
+                    try {
+                      setLoading(true);
+                      await axios.delete(`${baseUrl}/api/sessions/${item._id}`);
+                      fetchSessions();
+                    } catch (err) {
+                      console.error('Error deleting session:', err);
+                      Alert.alert('خطأ', 'فشل في حذف الجلسة');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }
+                }
+              ]);
+            }}>
+              <Ionicons name="trash" size={18} color="#E74C3C" />
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableOpacity>
     );

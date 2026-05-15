@@ -1,6 +1,5 @@
 import { useRouter } from "expo-router";
 import {
-  Button,
   StyleSheet,
   Text,
   View,
@@ -14,6 +13,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Ionicons } from "@expo/vector-icons";
 import { baseUrl } from "../context/constants";
 
 interface Student {
@@ -33,6 +33,7 @@ export default function AddPerson() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [students, setStudents] = useState([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchWord, setSearchWord] = useState<string>('');
 
   useEffect(() => {
@@ -62,15 +63,27 @@ export default function AddPerson() {
     setLoading(true);
 
     try {
-      await axios.post(`${baseUrl}/api/students`, {
-        name,
-        age: Number(age),
-        phone,
-      });
+      if (editingId) {
+        const res = await axios.put(`${baseUrl}/api/students/${editingId}`, {
+          name,
+          age: Number(age),
+          phone,
+        });
+        const updated = res.data;
+        setStudents((prev: any) => prev.map((s: any) => s._id === updated._id ? updated : s));
+        Alert.alert('نجاح', 'تم تحديث بيانات الطالب');
+        setEditingId(null);
+      } else {
+        await axios.post(`${baseUrl}/api/students`, {
+          name,
+          age: Number(age),
+          phone,
+        });
 
-      Alert.alert('تمت الإضافة', 'تم إضافة الطالب بنجاح');
+        Alert.alert('تمت الإضافة', 'تم إضافة الطالب بنجاح');
+      }
 
-      // Clear form after successful addition
+      // Clear form after successful action
       setName('');
       setAge('');
       setPhone('');
@@ -84,8 +97,64 @@ export default function AddPerson() {
     }
   };
 
+  const startEditing = (student: Student) => {
+    setEditingId(student._id);
+    setName(student.name);
+    setAge(String(student.age));
+    setPhone(student.phone || '');
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setName('');
+    setAge('');
+    setPhone('');
+  };
+
+  const deleteStudent = (id: string) => {
+    Alert.alert('تأكيد الحذف', 'هل أنت متأكد من حذف هذا الطالب؟', [
+      { text: 'إلغاء', style: 'cancel' },
+      {
+        text: 'حذف',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setLoading(true);
+            await axios.delete(`${baseUrl}/api/students/${id}`);
+            setStudents((prev: any) => prev.filter((s: any) => s._id !== id));
+            if (editingId === id) cancelEditing();
+            Alert.alert('نجح', 'تم حذف الطالب');
+          } catch (err) {
+            console.error('Error deleting student:', err);
+            Alert.alert('خطأ', 'حدث خطأ أثناء حذف الطالب');
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
+    ]);
+  };
+
   const renderStudent = ({ item }: { item: Student }) => (
     <View style={styles.studentCard}>
+      <View style={styles.cardActions}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => startEditing(item)}
+          disabled={loading}
+        >
+          <Ionicons name="create-outline" size={20} color="#235374" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => deleteStudent(item._id)}
+          disabled={loading}
+        >
+          <Ionicons name="trash-outline" size={20} color="#E74C3C" />
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.studentName}>{item.name}</Text>
       <Text style={styles.studentInfo}>العمر: {item.age}</Text>
       <Text style={styles.studentInfo}>الهاتف: {item.phone}</Text>
@@ -144,9 +213,15 @@ export default function AddPerson() {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>إضافة</Text>
+              <Text style={styles.buttonText}>{editingId ? 'تحديث' : 'إضافة'}</Text>
             )}
           </TouchableOpacity>
+
+          {editingId && (
+            <TouchableOpacity style={[styles.button, { backgroundColor: '#E74C3C' }]} onPress={cancelEditing} disabled={loading}>
+              <Text style={styles.buttonText}>إلغاء التعديل</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity onPress={() => router.push('/')}>
             <Text style={styles.backText}>رجوع إلى الصفحة الرئيسية</Text>
@@ -284,6 +359,17 @@ const styles = StyleSheet.create({
     elevation: 4, // ✅ ظل أقوى
     minHeight: 110, // ✅ زيادة الارتفاع قليلاً
     maxWidth: '46%', // ✅ تقليل العرض قليلاً للمساحات أفضل
+  },
+  cardActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 8,
+    marginBottom: 8,
+  },
+  iconButton: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: '#F2F6FA',
   },
   studentName: {
     fontWeight: '700', // ✅ وزن أقوى للاسم

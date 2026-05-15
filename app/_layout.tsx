@@ -133,6 +133,25 @@ export default function RootLayout() {
         }}
       />
 
+      <Stack.Screen
+        name="AddTeacher"
+        options={{
+          title: "إضافة معلم",
+          headerStyle: {
+            backgroundColor: '#0f1c2b',
+          },
+          headerTintColor: '#FFFFFF',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            fontSize: 18,
+            color: '#FFFFFF',
+          },
+          contentStyle: {
+            backgroundColor: '#235374'
+          },
+        }}
+      />
+
 
 
     </Stack>
